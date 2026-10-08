@@ -21,10 +21,11 @@ def add_application(company, role, status="applied", work_arrangement="", notes=
     """Add one application and return it."""
     applications = _load()
     new_app = {
-        "id": len(applications) + 1,
+        "id": max((app["id"] for app in applications), default=0) + 1,
         "company": company,
         "role": role,
         "date_applied": date.today().isoformat(),
+        "last_updated": date.today().isoformat(),
         "status": status,
         "work_arrangement": work_arrangement,
         "notes": notes,
@@ -36,6 +37,27 @@ def add_application(company, role, status="applied", work_arrangement="", notes=
 def list_applications():
     """Return all applications."""
     return _load()
+
+def update_status(app_id, new_status):
+    """Change the status of one application by its id. Returns the updated app, or None if not found."""
+    applications = _load()
+    for app in applications:
+        if app["id"] == app_id:
+            app["status"] = new_status
+            app["last_updated"] = date.today().isoformat()
+            _save(applications)
+            return app
+    return None
+
+def delete_application(app_id):
+    """Remove one application by its id. Returns the deleted app, or None if not found."""
+    applications = _load()
+    for i, app in enumerate(applications):
+        if app["id"] == app_id:
+            removed = applications.pop(i)
+            _save(applications)
+            return removed
+    return None
 
 # Quick self-test: run this file directly to confirm storage works.
 if __name__ == "__main__":
